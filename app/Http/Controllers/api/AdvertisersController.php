@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use App\Models\api\Advertisers;
-use Illuminate\Http\Request;
+use App\Http\Requests\AdvertisersStoreRequest;
+use App\Http\Requests\AdvertisersUpdateRequest;
+use App\Http\Controllers\API\BaseController as BaseController;
 
-class AdvertisersController extends Controller
+class AdvertisersController extends BaseController
 {
     /**
      * Display a listing of the resource.
@@ -15,12 +16,12 @@ class AdvertisersController extends Controller
      */
     public function index()
     {
-        $advertisers = Advertisers::get();
-        return response()->json([
-            'code' => '200',
-            'msg' => 'success',
-            'data' => $advertisers
-        ]);
+        try {
+            $advertisers = Advertisers::get();
+            return $this->sendResponse($advertisers, 'All Advertisers.');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -36,18 +37,21 @@ class AdvertisersController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\AdvertisersStoreRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(AdvertisersStoreRequest $request)
     {
-        $advertiser = $request->all();
-        $new_advertiser = Advertisers::create($advertiser);
-        return response()->json([
-            'code' => '200',
-            'msg' => 'Added new advertiser successfully',
-            'data' => $new_advertiser
-        ]);
+        try {
+            $validator = $request->validated();
+
+            $advertiser = $request->all();
+            $new_advertiser = Advertisers::create($advertiser);
+
+            return $this->sendResponse($new_advertiser, 'Added new advertiser successfully.');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -75,27 +79,26 @@ class AdvertisersController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\AdvertisersStoreRequest  $request
      * @param  \App\Models\api\Advertisers  $advertisers
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Advertisers $advertisers, $id)
+    public function update(AdvertisersUpdateRequest $request, Advertisers $advertisers, $id)
     {
-        if (!empty($advertisers::find($id))) {
-        $advertiser = $request->all();
-        $advertisers->whereId($id)->update($advertiser);
-        $after_updated = $advertisers::find($id);
-        return response()->json([
-            'code' => '200',
-            'msg' => 'Updated Tag successfully',
-            'data' => $after_updated
-        ]);
-    } else {
-        return response()->json([
-            'code' => '203',
-            'msg' => 'No Data to update for this ID:' . $id,
-        ]);
-    }
+        try {
+
+            if (!empty($advertisers::find($id))) {
+                $validator = $request->validated();
+                $advertiser = $request->all();
+                $advertisers->whereId($id)->update($advertiser);
+                $after_updated = $advertisers::find($id);
+                return $this->sendResponse($after_updated, 'Updated advertiser successfully.');
+            } else {
+                return $this->sendError('No Data to update for this ID:' . $id);
+            }
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -104,19 +107,20 @@ class AdvertisersController extends Controller
      * @param  \App\Models\api\Advertisers  $advertisers
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Advertisers $advertisers , $id)
+    public function destroy(Advertisers $advertisers, $id)
     {
-        if (!empty($advertisers::find($id))) {
-            $advertisers->whereId($id)->delete();
-            return response()->json([
-                'code' => '200',
-                'msg' => 'Deleted category successfully',
-            ]);
-        } else {
-            return response()->json([
-                'code' => '203',
-                'msg' => 'No Data to delete for this ID:' . $id,
-            ]);
+        try {
+            if (!empty($advertisers::find($id))) {
+                $advertisers->whereId($id)->delete();
+                return response()->json([
+                    'code' => '200',
+                    'msg' => 'Deleted category successfully',
+                ]);
+            } else {
+                return $this->sendError('No Data to delete for this ID:' . $id);
+            }
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
         }
     }
 }

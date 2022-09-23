@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('type', ['free', 'paid']);
             $table->foreignId('category')->constrained('categories')->onDelete('cascade');
             $table->foreignId('advertiser')->constrained('advertisers')->onDelete('cascade');
-            $table->timestamp('start_date')->nullable();
+            $table->time('start_date')->nullable();
             $table->timestamps();
         });
     }

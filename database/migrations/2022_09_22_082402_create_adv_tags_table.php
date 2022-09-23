@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('adv_tags', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ad')->constrained('ads')->onDelete('cascade');
-            $table->foreignId('tag')->constrained('tags')->onDelete('cascade');
+            $table->foreignId('ads_id')->constrained('ads')->onDelete('cascade');
+            $table->foreignId('tags_id')->constrained('tags')->onDelete('cascade');
 
             $table->timestamps();
         });

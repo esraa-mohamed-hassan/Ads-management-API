@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use App\Models\api\Categories;
-use Illuminate\Http\Request;
+use App\Http\Requests\CategoriesStoreRequest;
+use App\Http\Controllers\API\BaseController as BaseController;
 
-class CategoriesController extends Controller
+class CategoriesController extends BaseController
 {
     /**
      * Display a listing of the resource.
@@ -15,12 +15,12 @@ class CategoriesController extends Controller
      */
     public function index()
     {
-        $categories = Categories::get();
-        return response()->json([
-            'code' => '200',
-            'msg' => 'success',
-            'data' => $categories
-        ]);
+        try {
+            $categories = Categories::get();
+            return $this->sendResponse($categories, 'All Categories');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -36,18 +36,20 @@ class CategoriesController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\CategoriesStoreRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CategoriesStoreRequest $request)
     {
-        $category = $request->all();
-        $new_category = Categories::create($category);
-        return response()->json([
-            'code' => '200',
-            'msg' => 'Added new category successfully',
-            'data' => $new_category
-        ]);
+        try {
+            $validator = $request->validated();
+
+            $category = $request->all();
+            $new_category = Categories::create($category);
+            return $this->sendResponse($new_category, 'Added new category successfully.');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
 
     /**
@@ -75,26 +77,24 @@ class CategoriesController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\CategoriesStoreRequest  $request
      * @param  \App\Models\api\Categories  $categories
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Categories $categories, $id)
+    public function update(CategoriesStoreRequest $request, Categories $categories, $id)
     {
-        if (!empty($categories::find($id))) {
-            $category = $request->all();
-            $categories->whereId($id)->update($category);
-            $after_updated = $categories::find($id);
-            return response()->json([
-                'code' => '200',
-                'msg' => 'Updated category successfully',
-                'data' => $after_updated
-            ]);
-        } else {
-            return response()->json([
-                'code' => '203',
-                'msg' => 'No Data to update for this ID:' . $id,
-            ]);
+        try {
+            if (!empty($categories::find($id))) {
+                $validator = $request->validated();
+                $category = $request->all();
+                $categories->whereId($id)->update($category);
+                $after_updated = $categories::find($id);
+                return $this->sendResponse($after_updated, 'Updated category successfully.');
+            } else {
+                return $this->sendError('No Data to update for this ID:' . $id);
+            }
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
         }
     }
 
@@ -106,17 +106,15 @@ class CategoriesController extends Controller
      */
     public function destroy(Categories $categories, $id)
     {
-        if (!empty($categories::find($id))) {
-            $categories->whereId($id)->delete();
-            return response()->json([
-                'code' => '200',
-                'msg' => 'Deleted category successfully',
-            ]);
-        } else {
-            return response()->json([
-                'code' => '203',
-                'msg' => 'No Data to delete for this ID:' . $id,
-            ]);
+        try {
+            if (!empty($categories::find($id))) {
+                $categories->whereId($id)->delete();
+                return $this->sendResponse([], 'Deleted category successfully.');
+            } else {
+                return $this->sendError('No Data to delete for this ID:' . $id);
+            }
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
         }
     }
 }

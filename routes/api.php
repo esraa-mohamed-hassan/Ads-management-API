@@ -23,6 +23,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::apiResource('ads',AdsController::class);
+Route::get('ads/advertiser/{email}',[AdsController::class, 'adsByAdvertisers']);
+Route::get('ads/tags/{tag}',[AdsController::class, 'adsFilterByTag']);
+Route::get('ads/categories/{category}',[AdsController::class, 'adsFilterByCategory']);
+
 
 Route::apiResource('advertisers',AdvertisersController::class);
 

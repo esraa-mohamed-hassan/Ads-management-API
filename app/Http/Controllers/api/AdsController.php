@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use App\Models\api\Ads;
-use Illuminate\Http\Request;
+use App\Http\Requests\AdsStoreRequest;
+use App\Http\Controllers\API\BaseController as BaseController;
+use App\Models\api\Advertisers;
+use App\Models\api\Tags;
+use Illuminate\Support\Facades\DB;
 
-class AdsController extends Controller
+class AdsController extends BaseController
 {
     /**
      * Display a listing of the resource.
@@ -31,13 +34,133 @@ class AdsController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\AdsStoreRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(AdsStoreRequest $request)
     {
-        //
+        try {
+            $validator = $request->validated();
+
+            $ads = $request->all();
+            $new_ads = Ads::create($ads);
+            $tags = json_decode($request->input('tags'));
+            if (is_array($tags)) {
+                foreach ($tags as $tag) {
+                    $data = [
+                        'tags_id' => $tag,
+                        'ads_id' => $new_ads['id']
+                    ];
+                    DB::table('adv_tags')->insert($data);
+                }
+            } else {
+                $data = [
+                    'tags_id' => $tags,
+                    'ads_id' => $new_ads['id']
+                ];
+                DB::table('adv_tags')->insert($data);
+            }
+
+
+            $ads = Ads::with('advertiser:id,name,email')->with('tags')->with('category:id,name')
+                ->whereId($new_ads['id'])->first();
+
+            $all_tags = [];
+            $cat_name = $ads->categoryName($ads->category);
+            $advertiser_data = [
+                'name' => $ads->advertiserName($ads->advertiser),
+                'email' => $ads->advertiserEmail($ads->advertiser),
+            ];
+            foreach ($ads->tags as $tag) {
+                array_push($all_tags, $tag->name);
+            }
+
+            $data = [
+                'id' => $ads->id,
+                'title' => $ads->title,
+                'description' => $ads->description,
+                'advertiser' => $advertiser_data,
+                'category' => $cat_name,
+                'start_date' => $ads->start_date,
+                'type' => $ads->type,
+                'tags' => $all_tags,
+            ];
+
+            return $this->sendResponse($data, 'Added new Ads successfully.');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
     }
+
+    /**
+     * Display the specified resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function adsByAdvertisers($email)
+    {
+        try {
+            $adv_id = Advertisers::where('email', $email)->first()->id;
+            $ads = Ads::with('advertiser:id,name,email')->with('tags')->with('category:id,name')
+                ->where('advertiser', $adv_id)->get();
+
+            $all_ads = [];
+            foreach ($ads as $val) {
+                $all_tags = [];
+                $cat_name = $val->categoryName($val->category);
+                $advertiser_data = [
+                    'name' => $val->advertiserName($val->advertiser),
+                    'email' => $val->advertiserEmail($val->advertiser),
+                ];
+                foreach ($val->tags as $tag) {
+                    array_push($all_tags, $tag->name);
+                }
+                $data = [
+                    'id' => $val->id,
+                    'title' => $val->title,
+                    'description' => $val->description,
+                    'advertiser' => $advertiser_data,
+                    'category' => $cat_name,
+                    'start_date' => $val->start_date,
+                    'type' => $val->type,
+                    'tags' => $all_tags,
+                ];
+                array_push($all_ads, $data);
+            }
+            return $this->sendResponse($all_ads, 'All Ads By Advertisers with email:' . $email . '.');
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
+    }
+
+
+    /**
+     * Display the specified resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function adsFilterByTag($tag)
+    {
+        try {
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function adsFilterByCategory($category)
+    {
+        try {
+        } catch (\Exception $e) {
+            return $this->sendError('error Exception:', $e->getMessage());
+        }
+    }
+
+
 
     /**
      * Display the specified resource.
@@ -47,7 +170,6 @@ class AdsController extends Controller
      */
     public function show(Ads $ads)
     {
-        //
     }
 
     /**
@@ -64,11 +186,11 @@ class AdsController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\AdsStoreRequest  $request
      * @param  \App\Models\api\Ads  $ads
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Ads $ads)
+    public function update(AdsStoreRequest $request, Ads $ads)
     {
         //
     }

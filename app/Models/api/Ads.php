@@ -31,7 +31,7 @@ class Ads extends Model
      */
     public function advertiser()
     {
-        return $this->belongsTo(Advertisers::class);
+        return $this->belongsTo(Advertisers::class, 'advertiser');
     }
 
     /**
@@ -39,7 +39,7 @@ class Ads extends Model
      */
     public function tags()
     {
-        return $this->belongsToMany(Tags::class, 'adv_tags');
+        return $this->belongsToMany(Tags::class, 'adv_tags', 'tag_id', 'ads_id');
     }
 
       /**
@@ -47,6 +47,23 @@ class Ads extends Model
      */
     public function category()
     {
-        return $this->hasMany(Categories::class);
+        return $this->belongsTo(Categories::class, 'category')->select(['name']);
     }
+
+    public function categoryName($id)
+    {
+        return Categories::whereId($id)->first()->name;
+    }
+
+    public function advertiserName($id)
+    {
+        return Advertisers::whereId($id)->first()->name;
+    }
+
+    public function advertiserEmail($id)
+    {
+        return Advertisers::whereId($id)->first()->email;
+    }
+
+
 }
