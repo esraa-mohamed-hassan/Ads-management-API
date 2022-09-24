@@ -21,7 +21,7 @@ class Tags extends Model
     /**
      * The ads that belong to the tag.
      */
-    public function advs()
+    public function ads()
     {
         return $this->belongsToMany(Ads::class, 'adv_tags');
     }

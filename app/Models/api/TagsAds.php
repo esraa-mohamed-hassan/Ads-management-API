@@ -16,7 +16,7 @@ class TagsAds extends Model
      * @var string[]
      */
     protected $fillable = [
-        'tag',
-        'ad',
+        'tags_id',
+        'ads_id',
     ];
 }

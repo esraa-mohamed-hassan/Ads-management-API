@@ -6,6 +6,7 @@ use App\Models\api\Ads;
 use App\Http\Requests\AdsStoreRequest;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\api\Advertisers;
+use App\Models\api\Categories;
 use App\Models\api\Tags;
 use Illuminate\Support\Facades\DB;
 
@@ -85,7 +86,6 @@ class AdsController extends BaseController
                 'type' => $ads->type,
                 'tags' => $all_tags,
             ];
-
             return $this->sendResponse($data, 'Added new Ads successfully.');
         } catch (\Exception $e) {
             return $this->sendError('error Exception:', $e->getMessage());
@@ -139,9 +139,32 @@ class AdsController extends BaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function adsFilterByTag($tag)
+    public function adsFilterByTag($id)
     {
         try {
+            $tag = Tags::with('ads')->whereId($id)->first();
+            $tag_name = $tag->name;
+            $all_ads = [];
+            foreach ($tag->ads as $ad) {
+
+                $cat_name = $ad->categoryName($ad->category);
+                $advertiser_data = [
+                    'name' => $ad->advertiserName($ad->advertiser),
+                    'email' => $ad->advertiserEmail($ad->advertiser),
+                ];
+                $data = [
+                    'id' => $ad->id,
+                    'title' => $ad->title,
+                    'description' => $ad->description,
+                    'advertiser' => $advertiser_data,
+                    'category' => $cat_name,
+                    'start_date' => $ad->start_date,
+                    'type' => $ad->type,
+                    'tags' => $tag_name,
+                ];
+                array_push($all_ads, $data);
+            }
+            return $this->sendResponse($all_ads, 'All Ads Filtered by TagID:' . $id . '.');
         } catch (\Exception $e) {
             return $this->sendError('error Exception:', $e->getMessage());
         }
@@ -152,9 +175,32 @@ class AdsController extends BaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function adsFilterByCategory($category)
+    public function adsFilterByCategory($id)
     {
         try {
+            $ads = Ads::with('category')->where('category',$id)->get();
+            $all_ads = [];
+            foreach ($ads as $ad) {
+
+                $cat_name = $ad->categoryName($ad->category);
+                $tags_name = $ad->getTagByAdsId($ad->id);
+                $advertiser_data = [
+                    'name' => $ad->advertiserName($ad->advertiser),
+                    'email' => $ad->advertiserEmail($ad->advertiser),
+                ];
+                $data = [
+                    'id' => $ad->id,
+                    'title' => $ad->title,
+                    'description' => $ad->description,
+                    'advertiser' => $advertiser_data,
+                    'category' => $cat_name,
+                    'start_date' => $ad->start_date,
+                    'type' => $ad->type,
+                    'tags' => $tags_name,
+                ];
+                array_push($all_ads, $data);
+            }
+            return $this->sendResponse($all_ads, 'All Ads Filtered by Category ID:' . $id . '.');
         } catch (\Exception $e) {
             return $this->sendError('error Exception:', $e->getMessage());
         }

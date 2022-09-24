@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\api\Advertisers;
 use App\Models\api\Categories;
 use App\Models\api\Tags;
+use Illuminate\Support\Facades\DB;
 
 class Ads extends Model
 {
@@ -39,7 +40,7 @@ class Ads extends Model
      */
     public function tags()
     {
-        return $this->belongsToMany(Tags::class, 'adv_tags', 'tag_id', 'ads_id');
+        return $this->belongsToMany(Tags::class, 'adv_tags');
     }
 
       /**
@@ -64,6 +65,19 @@ class Ads extends Model
     {
         return Advertisers::whereId($id)->first()->email;
     }
+
+    public function getTagByAdsId($id)
+    {
+        $ads_tags = Ads::with('tags')->whereId($id)->first();
+        $tags = $ads_tags->tags;
+        $all_tags = [];
+        foreach($tags as $tag){
+            array_push($all_tags, $tag->name);
+        }
+        return $all_tags;
+    }
+
+
 
 
 }
