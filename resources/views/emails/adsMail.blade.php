@@ -33,15 +33,16 @@
         </style>
 </head>
 <body>
-    <h1>{{ $mData['title'] }}</h1>
+    <h1>{{ $mData[0]['title'] }}</h1>
 
-    Hi, {{ $mData['advertiser'] }}
+    Hi, {{ $mData[0]['advertiser'] }}
 
     <p>Here's all detail for your Ads</p>
 
     <table class="table ads_table">
         <thead>
             <tr>
+                <th scope="col">#</th>
                 <th scope="col">Title</th>
                 <th scope="col">Description</th>
                 <th scope="col">Type</th>
@@ -51,26 +52,30 @@
             </tr>
         </thead>
         <tbody>
+            @foreach ($mData as $k => $val)
             <tr>
-                <td>{{ $mData['ads_title'] }}</td>
-                <td>{{ $mData['ads_description'] }}</td>
-                <td>{{ $mData['ads_type'] }}</td>
-                <td>{{ $mData['ads_category'] }}</td>
+                <td>{{ $k+1 }}</td>
+                <td>{{ $val['ads_title'] }}</td>
+                <td>{{ $val['ads_description'] }}</td>
+                <td>{{ $val['ads_type'] }}</td>
+                <td>{{ $val['ads_category'] }}</td>
 
-                @if (is_array($mData['ads_tags']))
+                @if (is_array($val['ads_tags']))
                     <td>
                         <ul>
-                            @foreach ($mData['ads_tags'] as $val)
+                            @foreach ($val['ads_tags'] as $val)
                                 <li>{{ $val }}</li>
                             @endforeach
                         </ul>
                     </td>
                 @else
-                    <td>{{ $mData['ads_tags'] }}</td>
+                    <td>{{ $val['ads_tags'] }}</td>
 
                 @endif
-                <td>{{ $mData['ads_start_date'] }}</td>
+                <td>{{ $val }}</td>
             </tr>
+            @endforeach
+
         </tbody>
     </table>
 

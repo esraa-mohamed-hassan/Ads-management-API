@@ -17,11 +17,13 @@ class MailController extends Controller
      */
     public function index()
     {
-        $date = Carbon::now()->addDay(1)->format('Y-m-d');;
+        $date = Carbon::now()->addDay(1)->format('Y-m-d');
+
         $data = Ads::with('advertiser:id,name,email')
                    ->with('tags')->with('category:id,name')
                    ->where('start_date', $date)->get();
 
+        $all_data = [];
         foreach ($data as $val) {
             $all_tags = [];
             $cat_name = $val->categoryName($val->category);
@@ -30,9 +32,6 @@ class MailController extends Controller
             foreach ($val->tags as $tag) {
                 array_push($all_tags, $tag->name);
             }
-            $data = [
-
-            ];
 
             $mail_data = [
                 'advertiser' => $name,
@@ -44,9 +43,10 @@ class MailController extends Controller
                 'ads_tags' => $all_tags,
                 'ads_start_date' => $val->start_date,
             ];
+            array_push($all_data, $mail_data);
 
-            Mail::to($email)->send(new AdsMails($mail_data));
-            print("Email is sent successfully." . $val->id);
         }
+        Mail::to($email)->send(new AdsMails($all_data));
+        print("Email is sent successfully." . $val->id);
     }
 }

@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Mail\AdsMails;
+use App\Models\api\Ads;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 
 class AdsMail extends Command
@@ -29,14 +31,36 @@ class AdsMail extends Command
      */
     public function handle()
     {
-        $mail_data = [
-            'title' => 'Mail from Ads Mangement',
-            'body' => 'This is for testing email using smtp.'
-        ];
+        $date = Carbon::now()->addDay(1)->format('Y-m-d');
 
-        Mail::to('esraa.hassan147@gmail.com')->send(new AdsMails($mail_data));
+        $data = Ads::with('advertiser:id,name,email')
+                   ->with('tags')->with('category:id,name')
+                   ->where('start_date', $date)->get();
 
-        echo "Emailgg is sent successfully.";
+        $all_data = [];
+        foreach ($data as $val) {
+            $all_tags = [];
+            $cat_name = $val->categoryName($val->category);
+            $name = $val->advertiserName($val->advertiser);
+            $email = $val->advertiserEmail($val->advertiser);
+            foreach ($val->tags as $tag) {
+                array_push($all_tags, $tag->name);
+            }
+
+            $mail_data = [
+                'advertiser' => $name,
+                'title' => 'Mail from Ads Mangemant',
+                'ads_title' => $val->title,
+                'ads_description' => $val->description,
+                'ads_type' => $val->type,
+                'ads_category' => $cat_name,
+                'ads_tags' => $all_tags,
+                'ads_start_date' => $val->start_date,
+            ];
+            array_push($all_data, $mail_data);
+            print("Email is sent successfully." . $val->id);
+        }
+        Mail::to($email)->send(new AdsMails($all_data));
         return 0;
     }
 }

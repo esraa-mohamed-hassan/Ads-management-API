@@ -112,10 +112,9 @@ class AdvertisersController extends BaseController
         try {
             if (!empty($advertisers::find($id))) {
                 $advertisers->whereId($id)->delete();
-                return response()->json([
-                    'code' => '200',
-                    'msg' => 'Deleted category successfully',
-                ]);
+
+                return $this->sendResponse([],'Deleted advertiser successfully');
+
             } else {
                 return $this->sendError('No Data to delete for this ID:' . $id);
             }
