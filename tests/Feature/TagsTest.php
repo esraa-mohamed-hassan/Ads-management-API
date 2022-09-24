@@ -54,8 +54,10 @@ class TagsTest extends TestCase
         $payload = [
             'name' => 'Test update tag'
         ];
+        $tags = Tags::orderby('created_at', 'desc')->first();
+        $id = $tags['id'];
 
-        $response = $this->json('PUT', '/api/tags/21', $payload)
+        $response = $this->json('PUT', '/api/tags/'.$id, $payload)
             ->assertStatus(200);
 
         $content = json_decode($response->getContent(), true);
@@ -71,8 +73,8 @@ class TagsTest extends TestCase
 
     public function test_delete_tag()
     {
-        $tags = Tags::get();
-        $id = $tags[0]->id;
+        $tags = Tags::orderby('created_at', 'asc')->first();;
+        $id = $tags['id'];
         $response = $this->json('Delete', '/api/tags/'.$id)
             ->assertStatus(200);
 
