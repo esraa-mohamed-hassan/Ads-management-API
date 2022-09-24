@@ -14,3 +14,14 @@
 
 - Run this command to send mail
     - php artisan schedule:run
+
+- Run this command to Test Ads API for all files testing
+    - php artisan test
+    
+    
+ - Run this command to Test Ads API for each file
+    - php artisan test --filter TagsTest
+    - php artisan test --filter CategoriesTest
+    - php artisan test --filter AdvertisersTest
+    - php artisan test --filter AdsTest 
+
