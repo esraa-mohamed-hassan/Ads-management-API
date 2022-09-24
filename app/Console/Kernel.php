@@ -15,8 +15,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('send:adsmail')->dailyAt('20:00')->emailOutputOnFailure($_ENV['MAIL_USERNAME'])->withoutOverlapping();
-        $schedule->command('send:adsmail')->everyMinute()->emailOutputOnFailure($_ENV['MAIL_USERNAME'])->withoutOverlapping();
+        $schedule->command('send:adsmail')->dailyAt('20:00')->emailOutputOnFailure($_ENV['MAIL_USERNAME'])->withoutOverlapping();
     }
 
     /**
